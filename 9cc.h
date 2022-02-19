@@ -18,6 +18,8 @@ typedef enum {
     ND_NE,  // !=
     ND_LT,  // <
     ND_LE,  // <=
+    ND_ASSIGN, // =
+    ND_LVAR,   // ローカル変数
     ND_NUM, // 整数
 } NodeKind;
 
@@ -39,6 +41,7 @@ struct Node {
     Node *lhs;     // 左辺
     Node *rhs;     // 右辺
     int val;       // kindがND_NUMの場合のみ使う
+    int offset;    // kindがND_LVARの場合のみ使う
 };
 
 // 入力プログラム
@@ -47,18 +50,22 @@ extern char *user_input;
 // 現在着目しているトークン
 extern Token *token;
 
+// 構文木の先頭を保存しておく配列
+extern Node *code[];
 
+void error(char *fmt, ...);
 bool consume(char *op);
+Token *consume_ident();
 void expect(char *op);
 int expect_number();
 
-bool at_eof(); // ?
+bool at_eof();
 
 Token *tokenize(char *p);
 
 Node *new_node(NodeKind kind, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
 
-
 Node *expr();
 void gen(Node *node);
+void program();
