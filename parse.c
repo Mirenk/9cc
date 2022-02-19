@@ -94,6 +94,12 @@ Token *tokenize(char *p) {
             continue;
         }
 
+        if('a' <= *p && 'z' <= *p) { // 文字がa~zの間の場合
+            cur = new_token(TK_IDENT, cur, p++, 1);
+            cur->len = 1;
+            continue;
+        }
+
         if(startswith(p, "==") || startswith(p ,"!=") || startswith(p, ">=") || startswith(p, "<=")) {
             cur = new_token(TK_RESERVED, cur, p, 2);
             p += 2;
