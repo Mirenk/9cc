@@ -41,6 +41,16 @@ bool consume(char *op) {
     return true;
 }
 
+// トークンがTK_IDENTの場合はトークンのポインタを返す
+Token *consume_ident() {
+    Token *ident_token = token;
+    if(token->kind != TK_IDENT) {
+        return NULL;
+    }
+    token = token->next;
+    return ident_token;
+}
+
 // 次のトークンが期待している記号のときには、トークンを1つ読み進める。
 // それ以外の場合にはエラーを報告する。
 void expect(char *op) {
@@ -94,7 +104,7 @@ Token *tokenize(char *p) {
             continue;
         }
 
-        if('a' <= *p && 'z' <= *p) { // 文字がa~zの間の場合
+        if('a' <= *p && 'z' >= *p) { // 文字がa~zの間の場合
             cur = new_token(TK_IDENT, cur, p++, 1);
             cur->len = 1;
             continue;
@@ -106,7 +116,7 @@ Token *tokenize(char *p) {
             continue;
         }
 
-        if(*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '<' || *p == '>') {
+        if(*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '<' || *p == '>' || *p == '=' || *p == ';') {
             cur = new_token(TK_RESERVED, cur, p++, 1); // 記号が来たら記号を入れたあとにpを進める
             continue;
         }
