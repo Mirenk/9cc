@@ -77,6 +77,16 @@ bool at_eof() {
     return token->kind == TK_EOF;
 }
 
+// 変数の一文字目に利用できる文字であれば真
+bool is_ident_head(char c) {
+    return ('a' <= c && 'z' >= c) || ('A' <= c && 'Z' >= c) || c == '_';
+}
+
+// 変数の二文字目以降に利用できる文字であれば真
+bool is_ident(char c) {
+    return is_ident_head(c) || ('0' <= c && '9' >= c);
+}
+
 // 新しいトークンを作成してcurに繋げる
 Token *new_token(TokenKind kind, Token *cur, char *str, int len) {
     Token *tok = calloc(1, sizeof(Token));
@@ -104,9 +114,13 @@ Token *tokenize(char *p) {
             continue;
         }
 
-        if('a' <= *p && 'z' >= *p) { // 文字がa~zの間の場合
-            cur = new_token(TK_IDENT, cur, p++, 1);
-            cur->len = 1;
+        if(is_ident_head(*p)) {
+            cur = new_token(TK_IDENT, cur, p, 0);
+            char *tmp = p++;
+            while(is_ident(*p)) {
+                p++;
+            }
+            cur->len = p - tmp;
             continue;
         }
 

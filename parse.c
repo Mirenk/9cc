@@ -1,8 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "9cc.h"
 
 Node *code[100]; // 構文木の先頭を保存しておく配列
+
+LVar head;
+LVar *locals = &head; // ローカル変数
+
+LVar *find_lvar(Token *tok) {
+    for(LVar *var = locals; var; var = var->next) {
+        if(var->len == tok->len && !memcmp(tok->str, var->name, var->len)) {
+            return var;
+        }
+    }
+    return NULL;
+}
 
 Node *mul();
 Node *primary();
@@ -24,7 +37,19 @@ Node *primary() {
     if(tok) {
         Node *node = calloc(1, sizeof(Node));
         node->kind = ND_LVAR;
-        node->offset = (tok->str[0] - 'a' + 1) * 8; // ASCIIでオフセットを決める，aならrbp-8,bならrbp-16…
+
+        LVar *lvar = find_lvar(tok);
+        if(lvar) { // 既存のローカル変数だった場合、その変数のoffsetをそのまま使用
+            node->offset = lvar->offset;
+        } else { // 新規変数作成
+            lvar = calloc(1, sizeof(LVar));
+            lvar->next = locals;
+            lvar->name = tok->str;
+            lvar->len = tok->len;
+            lvar->offset = locals->offset + 8;
+            node->offset = lvar->offset;
+            locals = lvar;
+        }
         return node;
     }
 
