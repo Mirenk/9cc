@@ -77,6 +77,10 @@ bool at_eof() {
     return token->kind == TK_EOF;
 }
 
+bool startswith(char *p, char *q) {
+    return memcmp(p, q, 2) == 0;
+}
+
 // 変数の一文字目に利用できる文字であれば真
 bool is_ident_head(char c) {
     return ('a' <= c && 'z' >= c) || ('A' <= c && 'Z' >= c) || c == '_';
@@ -95,10 +99,6 @@ Token *new_token(TokenKind kind, Token *cur, char *str, int len) {
     tok->len = len;
     cur->next = tok;
     return tok;
-}
-
-bool startswith(char *p, char *q) {
-    return memcmp(p, q, 2) == 0;
 }
 
 // 入力文字列pをトークナイズしてそれを返す
