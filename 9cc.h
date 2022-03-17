@@ -72,9 +72,6 @@ extern char *user_input;
 // 現在着目しているトークン
 extern Token *token;
 
-// 構文木の先頭
-extern Node *code;
-
 void error(char *fmt, ...);
 bool consume(char *op);
 bool consume_kind(TokenKind op);
