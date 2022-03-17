@@ -41,6 +41,16 @@ bool consume(char *op) {
     return true;
 }
 
+// 次のトークンが期待している型のトークンのときには、トークンを一つ読み進めて
+// 真を返す。それ以外の場合には偽を返す
+bool consume_kind(TokenKind op) {
+    if(token->kind != op) {
+        return false;
+    }
+    token = token->next;
+    return true;
+}
+
 // トークンがTK_IDENTの場合はトークンのポインタを返す
 Token *consume_ident() {
     Token *ident_token = token;
@@ -111,6 +121,12 @@ Token *tokenize(char *p) {
         // 空白文字をスキップ
         if(isspace(*p)) {
             p++;
+            continue;
+        }
+
+        if (strncmp(p, "return", 6) == 0 && !is_ident(p[6])) {
+            cur = new_token(TK_RETURN, cur, p, 6);
+            p += 6;
             continue;
         }
 
