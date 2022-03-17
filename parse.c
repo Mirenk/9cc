@@ -23,6 +23,9 @@ Node *unary();
 Node *add();
 Node *equality();
 Node *relational();
+Node *expr();
+Node *new_node(NodeKind kind, Node *lhs, Node *rhs);
+Node *new_node_num(int val);
 
 Node *primary() {
     // 次のトークンが"("なら、"(" expr ")"のはず
