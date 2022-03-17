@@ -78,7 +78,7 @@ void gen(Node *node) {
     printf("  push rax\n");
 }
 
-void codegen() {
+void codegen(Func *prog) {
     // アセンブリの前半部分を出力
     printf(".intel_syntax noprefix\n");
     printf(".globl main\n");
@@ -88,10 +88,10 @@ void codegen() {
     // 変数26個分の領域を確保する
     printf("  push rbp\n");
     printf("  mov rbp, rsp\n");
-    printf("  sub rsp, 208\n");
+    printf("  sub rsp, %d\n", prog->stack_size);
 
     // 先頭の式から順にコード生成
-    for(Node *cur = code; cur; cur = cur->next) {
+    for(Node *cur = prog->code; cur; cur = cur->next) {
         gen(cur);
 
         // 式の評価結果としてスタックに一つの値が残っているはずなので，

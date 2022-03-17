@@ -55,6 +55,15 @@ struct LVar {
     int offset; // RBPからのオフセット
 };
 
+typedef struct Func Func;
+
+// 関数型
+struct Func {
+    Node *code;
+    LVar *locals;
+    int stack_size;
+};
+
 // 入力プログラム
 extern char *user_input;
 
@@ -73,5 +82,5 @@ int expect_number();
 bool at_eof();
 
 Token *tokenize(char *p);
-void program();
-void codegen();
+Func *program();
+void codegen(Func *prog);

@@ -19,9 +19,9 @@ int main(int argc, char **argv) {
 
     // トークナイズする
     token = tokenize(user_input);
-    program();
+    Func *prog = program();
 
-    codegen();
+    codegen(prog);
 
     return 0;
 }

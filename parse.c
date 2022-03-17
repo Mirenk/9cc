@@ -3,10 +3,7 @@
 #include <string.h>
 #include "9cc.h"
 
-Node *code; // 構文木の先頭
-
-LVar head;
-LVar *locals = &head; // ローカル変数
+LVar *locals; // ローカル変数
 
 LVar *find_lvar(Token *tok) {
     for(LVar *var = locals; var; var = var->next) {
@@ -148,9 +145,11 @@ Node *stmt() {
     return node;
 }
 
-void program() {
-    Node head;
-    code = &head;
+Func *program() {
+    Node node_head; // 構文木の先頭を保存しておく配列
+    Node *code = &node_head;
+    LVar lvar_head;
+    locals = &lvar_head;
     int i = 0;
 
     while(!at_eof()) {
@@ -158,5 +157,11 @@ void program() {
         code = code->next;
     }
     code->next = NULL; // 最後の木の後にnullを入れ，末尾が分かるようにする
-    code = head.next;
+
+    Func *prog = calloc(1, sizeof(Func));
+    prog->code = node_head.next;
+    prog->locals = locals;
+    prog->stack_size = locals->offset;
+
+    return prog;
 }
