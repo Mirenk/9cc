@@ -3,7 +3,7 @@
 #include <string.h>
 #include "9cc.h"
 
-Node *code[100]; // 構文木の先頭を保存しておく配列
+Node *code; // 構文木の先頭
 
 LVar head;
 LVar *locals = &head; // ローカル変数
@@ -149,9 +149,14 @@ Node *stmt() {
 }
 
 void program() {
+    Node head;
+    code = &head;
     int i = 0;
+
     while(!at_eof()) {
-        code[i++] = stmt(); // トークンが終わるまで木を作成し，入れていく
+        code->next = stmt(); // トークンが終わるまで木を作成し，入れていく
+        code = code->next;
     }
-    code[i] = NULL; // 最後の木の後にnullを入れ，末尾が分かるようにする
+    code->next = NULL; // 最後の木の後にnullを入れ，末尾が分かるようにする
+    code = head.next;
 }

@@ -38,6 +38,7 @@ typedef struct Node Node;
 // 抽象構文木のノードの型
 struct Node {
     NodeKind kind; // ノードの型
+    Node *next;    // 次のノード
     Node *lhs;     // 左辺
     Node *rhs;     // 右辺
     int val;       // kindがND_NUMの場合のみ使う
@@ -60,8 +61,8 @@ extern char *user_input;
 // 現在着目しているトークン
 extern Token *token;
 
-// 構文木の先頭を保存しておく配列
-extern Node *code[];
+// 構文木の先頭
+extern Node *code;
 
 void error(char *fmt, ...);
 bool consume(char *op);

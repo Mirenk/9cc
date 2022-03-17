@@ -91,8 +91,8 @@ void codegen() {
     printf("  sub rsp, 208\n");
 
     // 先頭の式から順にコード生成
-    for(int i = 0; code[i]; i++) {
-        gen(code[i]);
+    for(Node *cur = code; cur; cur = cur->next) {
+        gen(cur);
 
         // 式の評価結果としてスタックに一つの値が残っているはずなので，
         // スタックが溢れないようにpopしておく
