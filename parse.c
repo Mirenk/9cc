@@ -157,6 +157,7 @@ Func *program() {
     Node node_head; // 構文木の先頭を保存しておく配列
     Node *code = &node_head;
     LVar lvar_head;
+    lvar_head.offset = 0; // オフセット初期化
     locals = &lvar_head;
     int i = 0;
 
