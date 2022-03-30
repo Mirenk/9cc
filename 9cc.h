@@ -8,6 +8,7 @@ typedef enum {
     TK_EOF,      // 入力の終わりを表すトークン
     TK_RETURN,   // returnを表すトークン
     TK_IF,       // if
+    TK_ELSE,     // else
 } TokenKind;
 
 // 抽象構文木のノードの種類
@@ -25,6 +26,7 @@ typedef enum {
     ND_NUM, // 整数
     ND_RETURN, // return
     ND_IF,  // if
+    ND_ELSE, // else
 } NodeKind;
 
 typedef struct Token Token;
@@ -47,6 +49,7 @@ struct Node {
     Node *rhs;     // 右辺
     Node *cond;    // ifの条件式
     Node *then;    // 条件式が真だった場合のノード
+    Node *els;     // elseのノード
     int val;       // kindがND_NUMの場合のみ使う
     int offset;    // kindがND_LVARの場合のみ使う
 };

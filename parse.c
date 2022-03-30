@@ -149,6 +149,11 @@ Node *stmt() {
             node->cond = expr();
             expect(")");
             node->then = stmt();
+            // else
+            if(consume_kind(TK_ELSE)) {
+                node->els = stmt();
+            }
+            // else end
             return node;
         }
     }
