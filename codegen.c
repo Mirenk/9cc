@@ -58,16 +58,24 @@ void gen(Node *node) {
             printf(".Lend%d:\n", if_counter);
             return;
         }
-        case ND_WHILE: {
-            int while_counter = counter++;
-            printf(".Lbegin%d:\n", while_counter);
-            gen(node->cond);
-            printf("  pop rax\n");
-            printf("  cmp rax, 0\n");
-            printf("  je .Lend%d\n", while_counter);
+        case ND_LOOP: {
+            int loop_counter = counter++;
+            if(node->init) {
+                gen(node->init);
+            }
+            printf(".Lbegin%d:\n", loop_counter);
+            if(node->cond) {
+                gen(node->cond);
+                printf("  pop rax\n");
+                printf("  cmp rax, 0\n");
+                printf("  je .Lend%d\n", loop_counter);
+            }
             gen(node->then);
-            printf("  jmp .Lbegin%d\n", while_counter);
-            printf(".Lend%d:\n", while_counter);
+            if(node->inc) {
+                gen(node->inc);
+            }
+            printf("  jmp .Lbegin%d\n", loop_counter);
+            printf(".Lend%d:\n", loop_counter);
             return;
         }
     }

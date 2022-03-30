@@ -161,9 +161,32 @@ Node *stmt() {
     if(consume_kind(TK_WHILE)) {
         if(consume("(")) {
             node = calloc(1, sizeof(Node));
-            node->kind = ND_WHILE;
+            node->kind = ND_LOOP;
             node->cond = expr();
             expect(")");
+            node->then = stmt();
+            node->init = NULL;
+            node->inc = NULL;
+            return node;
+        }
+    }
+    
+    if(consume_kind(TK_FOR)) {
+        if(consume("(")) {
+            node = calloc(1, sizeof(Node));
+            node->kind = ND_LOOP;
+            if(!consume(";")) {
+                node->init = expr();
+                expect(";");
+            }
+            if(!consume(";")) {
+                node->cond = expr();
+                expect(";");
+            }
+            if(!consume(")")) {
+                node->inc = expr();
+                expect(")");
+            }
             node->then = stmt();
             return node;
         }
