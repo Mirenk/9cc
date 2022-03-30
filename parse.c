@@ -181,11 +181,11 @@ Node *stmt() {
 }
 
 Func *program() {
-    Node node_head; // 構文木の先頭を保存しておく配列
-    Node *code = &node_head;
-    LVar lvar_head;
-    lvar_head.offset = 0; // オフセット初期化
-    locals = &lvar_head;
+    Node *node_head = calloc(1, sizeof(Node)); // 構文木の先頭を保存しておく配列
+    Node *code = node_head;
+    LVar *lvar_head = calloc(1, sizeof(LVar));
+    lvar_head->offset = 0; // オフセット初期化
+    locals = lvar_head;
     int i = 0;
 
     while(!at_eof()) {
@@ -195,7 +195,7 @@ Func *program() {
     code->next = NULL; // 最後の木の後にnullを入れ，末尾が分かるようにする
 
     Func *prog = calloc(1, sizeof(Func));
-    prog->code = node_head.next;
+    prog->code = node_head->next;
     prog->locals = locals;
     prog->stack_size = locals->offset;
 
