@@ -142,6 +142,17 @@ Node *expr() {
 Node *stmt() {
     Node *node;
 
+    if(consume_kind(TK_IF)) {
+        if(consume("(")) {
+            node = calloc(1, sizeof(Node));
+            node->kind = ND_IF;
+            node->cond = expr();
+            expect(")");
+            node->then = stmt();
+            return node;
+        }
+    }
+
     if(consume_kind(TK_RETURN)) {
         node = calloc(1, sizeof(Node));
         node->kind = ND_RETURN;

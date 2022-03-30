@@ -52,4 +52,9 @@ assert 14 'a = 3; b = 5 * 6 - 8; return a + b / 2;'
 assert 6 'foo = 1; bar = 2 + 3; return foo + bar;'
 assert 5 'return 5; return 8;'
 
+assert 7 'if(0) return 2; return 3 + 4;'
+assert 2 'if(1) return 2; return 3 + 4;'
+assert 7 'if(1>2) return 2; return 3 + 4;'
+assert 2 'if(1<2) return 2; return 3 + 4;'
+
 echo OK
