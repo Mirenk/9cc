@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "9cc.h"
 
-static int if_counter = 0;
+static int counter = 0;
 
 void gen_lval(Node *node) {
     if(node->kind != ND_LVAR) {
@@ -40,22 +40,36 @@ void gen(Node *node) {
         printf("  pop rbp\n");
         printf("  ret\n");
         return;
-        case ND_IF:
-        gen(node->cond);
-        printf("  pop rax\n");
-        printf("  cmp rax, 0\n");
-        if(!node->els) {
-            printf("  je .Lend%d\n", if_counter);
-            gen(node->then);
-        } else {
-            printf("  je .Lelse%d\n", if_counter);
-            gen(node->then);
-            printf("  jmp .Lend%d\n", if_counter);
-            printf(".Lelse%d:\n", if_counter);
-            gen(node->els);
+        case ND_IF: {
+            int if_counter = counter++;
+            gen(node->cond);
+            printf("  pop rax\n");
+            printf("  cmp rax, 0\n");
+            if(!node->els) {
+                printf("  je .Lend%d\n", if_counter);
+                gen(node->then);
+            } else {
+                printf("  je .Lelse%d\n", if_counter);
+                gen(node->then);
+                printf("  jmp .Lend%d\n", if_counter);
+                printf(".Lelse%d:\n", if_counter);
+                gen(node->els);
+            }
+            printf(".Lend%d:\n", if_counter);
+            return;
         }
-        printf(".Lend%d:\n", if_counter++);
-        return;
+        case ND_WHILE: {
+            int while_counter = counter++;
+            printf(".Lbegin%d:\n", while_counter);
+            gen(node->cond);
+            printf("  pop rax\n");
+            printf("  cmp rax, 0\n");
+            printf("  je .Lend%d\n", while_counter);
+            gen(node->then);
+            printf("  jmp .Lbegin%d\n", while_counter);
+            printf(".Lend%d:\n", while_counter);
+            return;
+        }
     }
 
     gen(node->lhs);
