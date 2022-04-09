@@ -78,6 +78,11 @@ void gen(Node *node) {
             printf(".Lend%d:\n", loop_counter);
             return;
         }
+        case ND_BLOCK:
+        for(Node *cur = node->body; cur; cur = cur->next) {
+            gen(cur);
+        }
+        return;
     }
 
     gen(node->lhs);

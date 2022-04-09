@@ -170,7 +170,7 @@ Node *stmt() {
             return node;
         }
     }
-    
+
     if(consume_kind(TK_FOR)) {
         if(consume("(")) {
             node = calloc(1, sizeof(Node));
@@ -190,6 +190,21 @@ Node *stmt() {
             node->then = stmt();
             return node;
         }
+    }
+
+    if(consume("{")) {
+        Node *node = calloc(1, sizeof(Node));
+        node->kind = ND_BLOCK;
+
+        Node *cur = node;
+
+        while(!consume("}")) {
+            cur->next = stmt();
+            cur = cur->next;
+        }
+
+        node->body = node->next;
+        return node;
     }
 
     if(consume_kind(TK_RETURN)) {

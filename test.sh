@@ -68,4 +68,7 @@ assert 6 'a = 0; while(1) if(a==6) return a; else a = a + 1;'
 assert 6 'for(a=0;a<6;a=a+1) b=0; return a;'
 assert 6 'a = 0; for(;;) if(a==6) return a; else a = a + 1;'
 
+assert 1 '{return 1;}'
+assert 6 'a = 0; while(a<5) {a = a + 1; a = a + 1;} return a;'
+
 echo OK
