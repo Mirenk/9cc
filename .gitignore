@@ -5,3 +5,4 @@ a.out
 9cc
 .gdb_history
 peda-session-9cc.txt
+compile_commands.json
