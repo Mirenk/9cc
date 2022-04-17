@@ -36,19 +36,31 @@ Node *primary() {
     Token *tok = consume_ident();
     if(tok) {
         Node *node = calloc(1, sizeof(Node));
-        node->kind = ND_LVAR;
+        if(consume("(")) {
+            // 関数の場合
+            node->kind = ND_CALL;
 
-        LVar *lvar = find_lvar(tok);
-        if(lvar) { // 既存のローカル変数だった場合、その変数のoffsetをそのまま使用
-            node->offset = lvar->offset;
-        } else { // 新規変数作成
-            lvar = calloc(1, sizeof(LVar));
-            lvar->next = locals;
-            lvar->name = tok->str;
-            lvar->len = tok->len;
-            lvar->offset = locals->offset + 8;
-            node->offset = lvar->offset;
-            locals = lvar;
+            // 関数名を記録
+            char *funcname = calloc(1, (sizeof(char) * tok->len) + 1);
+            strncpy(funcname, tok->str, tok->len);
+            node->funcname = funcname;
+
+            expect(")");
+        } else {
+            node->kind = ND_LVAR;
+
+            LVar *lvar = find_lvar(tok);
+            if(lvar) { // 既存のローカル変数だった場合、その変数のoffsetをそのまま使用
+                node->offset = lvar->offset;
+            } else { // 新規変数作成
+                lvar = calloc(1, sizeof(LVar));
+                lvar->next = locals;
+                lvar->name = tok->str;
+                lvar->len = tok->len;
+                lvar->offset = locals->offset + 8;
+                node->offset = lvar->offset;
+                locals = lvar;
+            }
         }
         return node;
     }

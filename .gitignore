@@ -4,5 +4,5 @@ tmp*
 a.out
 9cc
 .gdb_history
-peda-session-9cc.txt
+*.txt
 compile_commands.json

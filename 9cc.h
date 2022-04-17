@@ -31,6 +31,7 @@ typedef enum {
     ND_ELSE, // else
     ND_LOOP, // for | while
     ND_BLOCK, // ブロック
+    ND_CALL, // 関数呼出
 } NodeKind;
 
 typedef struct Token Token;
@@ -57,6 +58,7 @@ struct Node {
     Node *init;    // forの初期化式
     Node *inc;     // forの反復式
     Node *body;    // ブロックの中身ノード
+    char *funcname;// kindがND_CALLの場合のみ使う
     int val;       // kindがND_NUMの場合のみ使う
     int offset;    // kindがND_LVARの場合のみ使う
 };

@@ -83,6 +83,22 @@ void gen(Node *node) {
             gen(cur);
         }
         return;
+        case ND_CALL:
+        // rbpを保存
+        printf("  push rbp\n");
+        printf("  mov rbp, rsp\n");
+        // rspアライメント
+        printf("  and rax, -16\n");
+        // raxクリア
+        printf("  xor rax, rax\n");
+        // 関数呼出
+        printf("  call %s\n", node->funcname);
+        // rbp復元
+        printf("  mov rsp, rbp\n");
+        printf("  pop rbp\n");
+        // 値をpush
+        printf("  push rax\n");
+        return;
     }
 
     gen(node->lhs);
