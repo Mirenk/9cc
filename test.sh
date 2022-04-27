@@ -2,6 +2,8 @@
 cat <<EOF | gcc -xc -c -o tmp2.o -
 int ret3() { return 3; }
 int ret5() { return 5; }
+int retarg(int a) { return a; }
+int retadd(int a, int b) { return a + b; }
 EOF
 
 assert() {
@@ -78,5 +80,8 @@ assert 6 'a = 0; while(a<5) {a = a + 1; a = a + 1;} return a;'
 
 assert 3 'return ret3();'
 assert 5 'return ret5();'
+
+assert 3 'return retarg(3);'
+assert 5 'return retadd(3, 2);'
 
 echo OK

@@ -45,7 +45,18 @@ Node *primary() {
             strncpy(funcname, tok->str, tok->len);
             node->funcname = funcname;
 
-            expect(")");
+            // 引数
+            Node *head = calloc(1, sizeof(Node));
+            Node *cur = head;
+            while(!consume(")")) {
+                if(cur != head) {
+                    expect(",");
+                }
+                cur->next = expr();
+                cur = cur->next;
+            }
+            node->arg = head->next;
+
         } else {
             node->kind = ND_LVAR;
 

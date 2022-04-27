@@ -58,6 +58,7 @@ struct Node {
     Node *init;    // forの初期化式
     Node *inc;     // forの反復式
     Node *body;    // ブロックの中身ノード
+    Node *arg;     // 引数
     char *funcname;// kindがND_CALLの場合のみ使う
     int val;       // kindがND_NUMの場合のみ使う
     int offset;    // kindがND_LVARの場合のみ使う

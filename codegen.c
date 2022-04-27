@@ -3,6 +3,8 @@
 
 static int counter = 0;
 
+char *argreg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+
 void gen_lval(Node *node) {
     if(node->kind != ND_LVAR) {
         error("代入の左辺値が変数ではありません");
@@ -83,22 +85,30 @@ void gen(Node *node) {
             gen(cur);
         }
         return;
-        case ND_CALL:
-        // rbpを保存
-        printf("  push rbp\n");
-        printf("  mov rbp, rsp\n");
-        // rspアライメント
-        printf("  and rax, -16\n");
-        // raxクリア
-        printf("  xor rax, rax\n");
-        // 関数呼出
-        printf("  call %s\n", node->funcname);
-        // rbp復元
-        printf("  mov rsp, rbp\n");
-        printf("  pop rbp\n");
-        // 値をpush
-        printf("  push rax\n");
-        return;
+        case ND_CALL: {
+            // rbpを保存
+            printf("  push rbp\n");
+            printf("  mov rbp, rsp\n");
+            // rspアライメント
+            printf("  and rax, -16\n");
+            // 引数
+            int argn = 0;
+            for(Node *cur = node->arg; cur; cur = cur->next) {
+                gen(cur);
+                printf("  pop %s\n", argreg[argn]);
+                argn++;
+            }
+            // raxクリア
+            printf("  xor rax, rax\n");
+            // 関数呼出
+            printf("  call %s\n", node->funcname);
+            // rbp復元
+            printf("  mov rsp, rbp\n");
+            printf("  pop rbp\n");
+            // 値をpush
+            printf("  push rax\n");
+            return;
+        }
     }
 
     gen(node->lhs);
