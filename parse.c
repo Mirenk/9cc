@@ -38,6 +38,27 @@ Node *relational();
 Node *expr();
 Node *compound_stmt();
 
+Node *lvar(Token *tok) {
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_LVAR;
+
+    LVar *lvar = find_lvar(tok);
+    if(lvar) { // 既存のローカル変数だった場合、その変数のoffsetをそのまま使用
+        node->offset = lvar->offset;
+    } else { // 新規変数作成
+        LVar *lvar = calloc(1, sizeof(LVar));
+        lvar->next = locals;
+        lvar->name = tok->str;
+        lvar->len = tok->len;
+        lvar->offset = locals->offset + 8;
+        locals = lvar;
+
+        node->offset = lvar->offset;
+    }
+
+    return node;
+}
+
 Node *primary() {
     // 次のトークンが"("なら、"(" expr ")"のはず
     if(consume("(")) {
@@ -49,8 +70,9 @@ Node *primary() {
     // 次のトークンが変数の場合
     Token *tok = consume_ident();
     if(tok) {
-        Node *node = calloc(1, sizeof(Node));
+        Node *node;
         if(consume("(")) {
+            node = calloc(1, sizeof(Node));
             // 関数の場合
             node->kind = ND_CALL;
 
@@ -72,20 +94,7 @@ Node *primary() {
             node->arg = head->next;
 
         } else {
-            node->kind = ND_LVAR;
-
-            LVar *lvar = find_lvar(tok);
-            if(lvar) { // 既存のローカル変数だった場合、その変数のoffsetをそのまま使用
-                node->offset = lvar->offset;
-            } else { // 新規変数作成
-                lvar = calloc(1, sizeof(LVar));
-                lvar->next = locals;
-                lvar->name = tok->str;
-                lvar->len = tok->len;
-                lvar->offset = locals->offset + 8;
-                node->offset = lvar->offset;
-                locals = lvar;
-            }
+            node = lvar(tok);
         }
         return node;
     }
