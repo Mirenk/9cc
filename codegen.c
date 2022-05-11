@@ -90,7 +90,7 @@ void gen(Node *node) {
             printf("  push rbp\n");
             printf("  mov rbp, rsp\n");
             // rspアライメント
-            printf("  and rax, -16\n");
+            printf("  and rsp, -16\n");
             // 引数
             int argn = 0;
             for(Node *cur = node->arg; cur; cur = cur->next) {
