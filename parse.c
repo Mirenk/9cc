@@ -36,6 +36,7 @@ Node *add();
 Node *equality();
 Node *relational();
 Node *expr();
+Node *compound_stmt();
 
 Node *primary() {
     // 次のトークンが"("なら、"(" expr ")"のはず
@@ -229,18 +230,7 @@ Node *stmt() {
     }
 
     if(consume("{")) {
-        Node *node = calloc(1, sizeof(Node));
-        node->kind = ND_BLOCK;
-
-        Node *cur = node;
-
-        while(!consume("}")) {
-            cur->next = stmt();
-            cur = cur->next;
-        }
-
-        node->body = node->next;
-        return node;
+        return compound_stmt();
     }
 
     if(consume_kind(TK_RETURN)) {
@@ -251,6 +241,21 @@ Node *stmt() {
         node = expr();
     }
     expect(";");
+    return node;
+}
+
+Node *compound_stmt() {
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_BLOCK;
+
+    Node *cur = node;
+
+    while(!consume("}")) {
+        cur->next = stmt();
+        cur = cur->next;
+    }
+
+    node->body = node->next;
     return node;
 }
 
