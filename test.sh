@@ -4,6 +4,12 @@ int ret3() { return 3; }
 int ret5() { return 5; }
 int retarg(int a) { return a; }
 int retadd(int a, int b) { return a + b; }
+
+int add(int x, int y) { return x+y; }
+int sub(int x, int y) { return x-y; }
+int add6(int a, int b, int c, int d, int e, int f) {
+  return a+b+c+d+e+f;
+}
 EOF
 
 assert() {
@@ -83,5 +89,16 @@ assert 5 'main(){return ret5();}'
 
 assert 3 'main(){return retarg(3);}'
 assert 5 'main(){return retadd(3, 2);}'
+assert 8 'main(){ return add(3, 5); }'
+assert 2 'main(){ return sub(5, 3); }'
+assert 21 'main(){ return add6(1,2,3,4,5,6); }'
+assert 66 'main(){ return add6(1,2,add6(3,4,5,6,7,8),9,10,11); }'
+assert 136 'main(){ return add6(1,2,add6(3,add6(4,5,6,7,8,9),10,11,12,13),14,15,16); }'
+
+assert 32 'main() { return ret32(); } ret32() { return 32; }'
+
+assert 7 'main() { return add2(3,4); } add2(x, y) { return x+y; }'
+assert 1 'main() { return sub2(4,3); } sub2(x, y) { return x-y; }'
+assert 55 'main() { return fib(9); } fib(x) { if (x<=1) return 1; return fib(x-1) + fib(x-2); }'
 
 echo OK

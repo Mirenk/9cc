@@ -86,18 +86,23 @@ void gen(Node *node) {
         }
         return;
         case ND_CALL: {
+            // 引数
+            // 先に値を計算しpush
+            int argn = 0;
+            for(Node *cur = node->arg; cur; cur = cur->next) {
+                gen(cur);
+                argn++;
+            }
+            // 順にpopする
+            // そうしないと引数が関数呼び出しの場合にうまく行かない
+            for(int i = argn - 1; i >= 0; i--) {
+                printf("  pop %s\n", argreg[i]);
+            }
             // rbpを保存
             printf("  push rbp\n");
             printf("  mov rbp, rsp\n");
             // rspアライメント
             printf("  and rsp, -16\n");
-            // 引数
-            int argn = 0;
-            for(Node *cur = node->arg; cur; cur = cur->next) {
-                gen(cur);
-                printf("  pop %s\n", argreg[argn]);
-                argn++;
-            }
             // raxクリア
             printf("  xor rax, rax\n");
             // 関数呼出
@@ -173,8 +178,9 @@ void codegen(Func *prog) {
         // 引数をスタック上のローカル変数に入れる
         int argn = 0;
         for(Node *cur = func->args; cur; cur = cur->next) {
-            gen(cur);
-            printf("  push %s\n", argreg[argn]);
+            gen_lval(cur);
+            printf("  pop rax\n");
+            printf("  mov [rax], %s\n", argreg[argn]);
             argn++;
         }
 
