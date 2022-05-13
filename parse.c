@@ -268,24 +268,57 @@ Node *compound_stmt() {
     return node;
 }
 
-Func *program() {
-    Node *node_head = calloc(1, sizeof(Node)); // 構文木の先頭を保存しておく配列
-    Node *code = node_head;
+Func *function_definition() {
     LVar *lvar_head = calloc(1, sizeof(LVar));
     lvar_head->offset = 0; // オフセット初期化
     locals = lvar_head;
-    int i = 0;
+
+    Token *tok = expect_token();
+    expect("(");
+
+    Func *func = calloc(1, sizeof(Func));
+
+    // 関数名を記録
+    char *name = calloc(1, (sizeof(char) * tok->len) + 1);
+    strncpy(name, tok->str, tok->len);
+    func->name = name;
+
+    // 引数
+    Node *arg_head = calloc(1, sizeof(Node));
+    Node *cur = arg_head;
+    while(!consume(")")) {
+        if(cur != arg_head) {
+            expect(",");
+        }
+        tok = expect_token();
+        if(find_lvar(tok)) {
+            error_at(tok->str, "既に宣言されている変数です");
+        }
+        cur->next = lvar(tok);
+        cur = cur->next;
+    }
+    func->args = arg_head->next;
+
+    // 関数内部のブロック
+    expect("{");
+    Node *node = compound_stmt();
+
+    func->code = node;
+    func->locals = locals;
+    func->stack_size = locals->offset;
+
+    return func;
+}
+
+Func *program() {
+    Func *func_head = calloc(1, sizeof(Func)); // 構文木の先頭を保存しておく配列
+    Func *func = func_head;
 
     while(!at_eof()) {
-        code->next = stmt(); // トークンが終わるまで木を作成し，入れていく
-        code = code->next;
+        func->next = function_definition(); // トークンが終わるまで木を作成し，入れていく
+        func = func->next;
     }
-    code->next = NULL; // 最後の木の後にnullを入れ，末尾が分かるようにする
+    func->next = NULL; // 最後の木の後にnullを入れ，末尾が分かるようにする
 
-    Func *prog = calloc(1, sizeof(Func));
-    prog->code = node_head->next;
-    prog->locals = locals;
-    prog->stack_size = locals->offset;
-
-    return prog;
+    return func_head->next;
 }

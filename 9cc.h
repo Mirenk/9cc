@@ -78,7 +78,10 @@ typedef struct Func Func;
 
 // 関数型
 struct Func {
+    Func *next;
+    char *name;
     Node *code;
+    Node *args;
     LVar *locals;
     int stack_size;
 };
@@ -90,11 +93,13 @@ extern char *user_input;
 extern Token *token;
 
 void error(char *fmt, ...);
+void error_at(char *loc, char *fmt, ...);
 bool consume(char *op);
 bool consume_kind(TokenKind op);
 Token *consume_ident();
 void expect(char *op);
 int expect_number();
+Token *expect_token();
 
 bool at_eof();
 

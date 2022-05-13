@@ -83,6 +83,18 @@ int expect_number() {
     return val;
 }
 
+// トークンがTK_IDENTの場合は、トークンを1つ読み進める。
+// それ以外の場合にはエラーを報告する。
+Token *expect_token() {
+    Token *ident_token = token;
+    if(token->kind != TK_IDENT) {
+        error_at(token->str, "識別子ではありません");
+    }
+    token = token->next;
+
+    return ident_token;
+}
+
 bool at_eof() {
     return token->kind == TK_EOF;
 }

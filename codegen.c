@@ -156,30 +156,41 @@ void gen(Node *node) {
     printf("  push rax\n");
 }
 
+
 void codegen(Func *prog) {
     // アセンブリの前半部分を出力
     printf(".intel_syntax noprefix\n");
-    printf(".globl main\n");
-    printf("main:\n");
+    for(Func *func = prog; func; func = func->next) {
+        printf(".globl %s\n", func->name);
+        printf("%s:\n", func->name);
 
-    // プロローグ
-    // 変数26個分の領域を確保する
-    printf("  push rbp\n");
-    printf("  mov rbp, rsp\n");
-    printf("  sub rsp, %d\n", prog->stack_size);
+        // プロローグ
+        // 変数26個分の領域を確保する
+        printf("  push rbp\n");
+        printf("  mov rbp, rsp\n");
+        printf("  sub rsp, %d\n", func->stack_size);
 
-    // 先頭の式から順にコード生成
-    for(Node *cur = prog->code; cur; cur = cur->next) {
-        gen(cur);
+        // 引数をスタック上のローカル変数に入れる
+        int argn = 0;
+        for(Node *cur = func->args; cur; cur = cur->next) {
+            gen(cur);
+            printf("  push %s\n", argreg[argn]);
+            argn++;
+        }
 
-        // 式の評価結果としてスタックに一つの値が残っているはずなので，
-        // スタックが溢れないようにpopしておく
-        printf("  pop rax\n");
+        // 先頭の式から順にコード生成
+        for(Node *cur = func->code; cur; cur = cur->next) {
+            gen(cur);
+
+            // 式の評価結果としてスタックに一つの値が残っているはずなので，
+            // スタックが溢れないようにpopしておく
+            printf("  pop rax\n");
+        }
+
+        // エピローグ
+        // 最後の式の結果がraxに残っているのでそれが返り値になる
+        printf("  mov rsp, rbp\n");
+        printf("  pop rbp\n");
+        printf("  ret\n");
     }
-
-    // エピローグ
-    // 最後の式の結果がraxに残っているのでそれが返り値になる
-    printf("  mov rsp, rbp\n");
-    printf("  pop rbp\n");
-    printf("  ret\n");
 }
