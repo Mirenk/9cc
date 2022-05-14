@@ -273,7 +273,7 @@ Func *function_definition() {
     lvar_head->offset = 0; // オフセット初期化
     locals = lvar_head;
 
-    Token *tok = expect_token();
+    Token *tok = expect_ident();
     expect("(");
 
     Func *func = calloc(1, sizeof(Func));
@@ -290,7 +290,7 @@ Func *function_definition() {
         if(cur != arg_head) {
             expect(",");
         }
-        tok = expect_token();
+        tok = expect_ident();
         if(find_lvar(tok)) {
             error_at(tok->str, "既に宣言されている変数です");
         }

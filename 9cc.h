@@ -99,7 +99,7 @@ bool consume_kind(TokenKind op);
 Token *consume_ident();
 void expect(char *op);
 int expect_number();
-Token *expect_token();
+Token *expect_ident();
 
 bool at_eof();
 

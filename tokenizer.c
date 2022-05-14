@@ -83,9 +83,9 @@ int expect_number() {
     return val;
 }
 
-// トークンがTK_IDENTの場合は、トークンを1つ読み進める。
+// トークンがTK_IDENTの場合は、トークンを1つ読み進めてトークンのポインタを返す。
 // それ以外の場合にはエラーを報告する。
-Token *expect_token() {
+Token *expect_ident() {
     Token *ident_token = token;
     if(token->kind != TK_IDENT) {
         error_at(token->str, "識別子ではありません");
