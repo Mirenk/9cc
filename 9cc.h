@@ -32,6 +32,8 @@ typedef enum {
     ND_LOOP, // for | while
     ND_BLOCK, // ブロック
     ND_CALL, // 関数呼出
+    ND_ADDR, // 単項&
+    ND_DEREF, // 単項*
 } NodeKind;
 
 typedef struct Token Token;

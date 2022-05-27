@@ -110,6 +110,12 @@ Node *unary() {
     if(consume("-")) {
         return new_node(ND_SUB, new_node_num(0), primary()); // 単項-の場合、0-xとする
     }
+    if(consume("&")) {
+        return new_node(ND_ADDR, unary(), NULL); // 単項-の場合、0-xとする
+    }
+    if(consume("*")) {
+        return new_node(ND_DEREF, unary(), NULL); // 単項-の場合、0-xとする
+    }
     return primary(); // その他の場合、今までと同じ
 }
 
