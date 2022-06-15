@@ -166,6 +166,12 @@ Token *tokenize(char *p) {
             continue;
         }
 
+        if (strncmp(p, "int", 3) == 0 && !is_ident(p[3])) {
+            cur = new_token(TK_INT, cur, p, 3);
+            p += 3;
+            continue;
+        }
+
         if(is_ident_head(*p)) {
             cur = new_token(TK_IDENT, cur, p, 0);
             char *tmp = p++;

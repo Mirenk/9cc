@@ -11,6 +11,7 @@ typedef enum {
     TK_ELSE,     // else
     TK_WHILE,    // while
     TK_FOR,      // for
+    TK_INT,      // int
 } TokenKind;
 
 // 抽象構文木のノードの種類

@@ -38,23 +38,36 @@ Node *relational();
 Node *expr();
 Node *compound_stmt();
 
-Node *lvar(Token *tok) {
+Node *new_lvar(Token *tok) {
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_LVAR;
 
     LVar *lvar = find_lvar(tok);
     if(lvar) { // 既存のローカル変数だった場合、その変数のoffsetをそのまま使用
-        node->offset = lvar->offset;
-    } else { // 新規変数作成
-        LVar *lvar = calloc(1, sizeof(LVar));
-        lvar->next = locals;
-        lvar->name = tok->str;
-        lvar->len = tok->len;
-        lvar->offset = locals->offset + 8;
-        locals = lvar;
-
-        node->offset = lvar->offset;
+        error("既に定義されている変数です。");
     }
+
+    lvar = calloc(1, sizeof(LVar));
+    lvar->next = locals;
+    lvar->name = tok->str;
+    lvar->len = tok->len;
+    lvar->offset = locals->offset + 8;
+    locals = lvar;
+
+    node->offset = lvar->offset;
+
+    return node;
+}
+
+Node *lvar(Token *tok) {
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_LVAR;
+
+    LVar *lvar = find_lvar(tok);
+    if(!lvar) { // 既存のローカル変数だった場合、その変数のoffsetをそのまま使用
+        error("定義されていない変数です。");
+    }
+    node->offset = lvar->offset;
 
     return node;
 }
@@ -259,6 +272,18 @@ Node *stmt() {
     return node;
 }
 
+Node *declaration() {
+    Token *tok = consume_ident();
+
+    if(!tok) {
+        error("型名の次は識別子でなければなりません。");
+    }
+
+    Node *node = new_lvar(tok);
+
+    return node;
+}
+
 Node *compound_stmt() {
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_BLOCK;
@@ -266,7 +291,12 @@ Node *compound_stmt() {
     Node *cur = node;
 
     while(!consume("}")) {
-        cur->next = stmt();
+        if(consume_kind(TK_INT)) {
+            cur->next = declaration();
+            expect(";");
+        } else {
+            cur->next = stmt();
+        }
         cur = cur->next;
     }
 
@@ -278,6 +308,11 @@ Func *function_definition() {
     LVar *lvar_head = calloc(1, sizeof(LVar));
     lvar_head->offset = 0; // オフセット初期化
     locals = lvar_head;
+
+    // intから始まるかチェック
+    if(!consume_kind(TK_INT)) {
+        error("型名ではありません。");
+    }
 
     Token *tok = expect_ident();
     expect("(");
@@ -296,11 +331,10 @@ Func *function_definition() {
         if(cur != arg_head) {
             expect(",");
         }
-        tok = expect_ident();
-        if(find_lvar(tok)) {
-            error_at(tok->str, "既に宣言されている変数です");
+        if(!consume_kind(TK_INT)) {
+            error("型名ではありません。");
         }
-        cur->next = lvar(tok);
+        cur->next = declaration();
         cur = cur->next;
     }
     func->args = arg_head->next;
