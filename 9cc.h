@@ -67,11 +67,20 @@ struct Node {
     int offset;    // kindがND_LVARの場合のみ使う
 };
 
+typedef struct Type Type;
+
+// ローカル変数型の型
+struct Type {
+    enum { INT, PTR } ty;
+    struct Type *ptr_to;
+};
+
 typedef struct LVar LVar;
 
 // ローカル変数の型
 struct LVar {
     LVar *next; // 次の変数かNULL
+    Type *type; // 変数の型
     char *name; // 変数名
     int len;    // 変数名の長さ
     int offset; // RBPからのオフセット

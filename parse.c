@@ -38,16 +38,35 @@ Node *relational();
 Node *expr();
 Node *compound_stmt();
 
-Node *new_lvar(Token *tok) {
+Type *pointer() {
+    Type *cur = calloc(1, sizeof(Type));
+    Type *head = cur;
+
+    while(consume("*")) {
+        cur->ty = PTR;
+
+        cur->ptr_to = calloc(1, sizeof(Type));
+        cur = cur->ptr_to;
+    }
+
+    cur->ty = INT;
+
+    return head;
+}
+
+Node *new_lvar() {
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_LVAR;
 
-    LVar *lvar = find_lvar(tok);
-    if(lvar) { // 既存のローカル変数だった場合、その変数のoffsetをそのまま使用
+    LVar *lvar = calloc(1, sizeof(LVar));
+    lvar->type = pointer();
+
+    Token *tok = expect_ident();
+
+    if(find_lvar(tok)) {
         error("既に定義されている変数です。");
     }
 
-    lvar = calloc(1, sizeof(LVar));
     lvar->next = locals;
     lvar->name = tok->str;
     lvar->len = tok->len;
@@ -273,15 +292,7 @@ Node *stmt() {
 }
 
 Node *declaration() {
-    Token *tok = consume_ident();
-
-    if(!tok) {
-        error("型名の次は識別子でなければなりません。");
-    }
-
-    Node *node = new_lvar(tok);
-
-    return node;
+    return new_lvar();
 }
 
 Node *compound_stmt() {

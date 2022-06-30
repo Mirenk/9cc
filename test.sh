@@ -109,4 +109,5 @@ assert 5 'int main(){ int x; int y; x=3; y=&x; *y=5; return x; }'
 assert 7 'int main(){ int x; int y; x=3; y=5; *(&y+8)=7; return x; }'
 assert 7 'int main(){ int x; int y; x=3; y=5; *(&x-8)=7; return y; }'
 
+assert 3 'int main(){ int x; int *y; y = &x; *y = 3; return x; }'
 echo OK
