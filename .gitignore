@@ -6,3 +6,4 @@ a.out
 .gdb_history
 *.txt
 compile_commands.json
+.ccls-cache
