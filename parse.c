@@ -13,8 +13,11 @@ Node *new_node(NodeKind kind, Node *lhs, Node *rhs) {
 
 Node *new_node_num(int val) {
     Node *node =calloc(1, sizeof(Node));
+    Type *type = calloc(1, sizeof(Type));
     node->kind = ND_NUM;
     node->val = val;
+    type->ty = INT;
+    node->type = type;
     return node;
 }
 
@@ -60,6 +63,7 @@ Node *new_lvar() {
 
     LVar *lvar = calloc(1, sizeof(LVar));
     lvar->type = pointer();
+    node->type = lvar->type;
 
     Token *tok = expect_ident();
 
@@ -87,6 +91,7 @@ Node *lvar(Token *tok) {
         error("定義されていない変数です。");
     }
     node->offset = lvar->offset;
+    node->type = lvar->type;
 
     return node;
 }
@@ -353,6 +358,7 @@ Func *function_definition() {
     // 関数内部のブロック
     expect("{");
     Node *node = compound_stmt();
+    set_type(node);
 
     func->code = node;
     func->locals = locals;

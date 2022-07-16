@@ -1,5 +1,6 @@
 #!/bin/bash
 cat <<EOF | gcc -xc -c -o tmp2.o -
+#include <stdlib.h>
 int ret3() { return 3; }
 int ret5() { return 5; }
 int retarg(int a) { return a; }
@@ -9,6 +10,13 @@ int add(int x, int y) { return x+y; }
 int sub(int x, int y) { return x-y; }
 int add6(int a, int b, int c, int d, int e, int f) {
   return a+b+c+d+e+f;
+}
+int alloc4(int **ptr, int a, int b, int c, int d) {
+  *ptr = calloc(4, sizeof(int));
+  (*ptr)[0] = a;
+  (*ptr)[1] = b;
+  (*ptr)[2] = c;
+  (*ptr)[3] = d;
 }
 EOF
 
@@ -102,12 +110,13 @@ assert 1 'int main() { return sub2(4,3); } int sub2(int x, int y) { return x-y; 
 assert 55 'int main() { return fib(9); } int fib(int x) { if (x<=1) return 1; return fib(x-1) + fib(x-2); }'
 
 assert 3 'int main(){ int x; x=3; return *&x; }'
-assert 3 'int main(){ int x; int y; int z; x=3; y=&x; z=&y; return **z; }'
-assert 3 'int main(){ int x; int y; x=3; y=5; return *(&y+8); }'
-assert 5 'int main(){ int x; int y; x=3; y=5; return *(&x-8); }'
-assert 5 'int main(){ int x; int y; x=3; y=&x; *y=5; return x; }'
-assert 7 'int main(){ int x; int y; x=3; y=5; *(&y+8)=7; return x; }'
-assert 7 'int main(){ int x; int y; x=3; y=5; *(&x-8)=7; return y; }'
+assert 3 'int main(){ int x; int *y; int **z; x=3; y=&x; z=&y; return **z; }'
+#assert 3 'int main(){ int x; int y; x=3; y=5; return *(&y+8); }'
+#assert 5 'int main(){ int x; int y; x=3; y=5; return *(&x-8); }'
+assert 5 'int main(){ int x; int *y; x=3; y=&x; *y=5; return x; }'
+#assert 7 'int main(){ int x; int y; x=3; y=5; *(&y+1)=7; return x; }'
+#assert 7 'int main(){ int x; int y; x=3; y=5; *(&x-1)=7; return y; }'
 
 assert 3 'int main(){ int x; int *y; y = &x; *y = 3; return x; }'
+assert 8 'int main(){int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = p + 3; return *q;}'
 echo OK

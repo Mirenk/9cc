@@ -47,6 +47,14 @@ struct Token {
     int len;        // トークンの長さ
 };
 
+typedef struct Type Type;
+
+// ローカル変数型の型
+struct Type {
+    enum { INT, PTR } ty;
+    struct Type *ptr_to;
+};
+
 typedef struct Node Node;
 
 // 抽象構文木のノードの型
@@ -62,17 +70,10 @@ struct Node {
     Node *inc;     // forの反復式
     Node *body;    // ブロックの中身ノード
     Node *arg;     // 引数
+    Type *type;      // ノードの型
     char *funcname;// kindがND_CALLの場合のみ使う
     int val;       // kindがND_NUMの場合のみ使う
     int offset;    // kindがND_LVARの場合のみ使う
-};
-
-typedef struct Type Type;
-
-// ローカル変数型の型
-struct Type {
-    enum { INT, PTR } ty;
-    struct Type *ptr_to;
 };
 
 typedef struct LVar LVar;
@@ -118,3 +119,5 @@ bool at_eof();
 Token *tokenize(char *p);
 Func *program();
 void codegen(Func *prog);
+
+void set_type(Node *node);

@@ -19,6 +19,19 @@ void gen_lval(Node *node) {
     }
 }
 
+void gen_calc_ptr(Node *node) {
+    if(node->type->ty == PTR) {
+        printf("  pop rax\n");
+        if(node->type->ptr_to->ty == INT) {
+            printf("  mov rdi, %d\n", 4);
+        } else {
+            printf("  mov rdi, %d\n", 8);
+        }
+        printf("  imul rax, rdi\n");
+        printf("  push rax\n");
+    }
+}
+
 void gen(Node *node) {
     switch (node->kind) {
         case ND_NUM:
@@ -130,7 +143,9 @@ void gen(Node *node) {
     }
 
     gen(node->lhs);
+    gen_calc_ptr(node->rhs);
     gen(node->rhs);
+    gen_calc_ptr(node->lhs);
 
     printf("  pop rdi\n");
     printf("  pop rax\n");
