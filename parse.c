@@ -141,6 +141,7 @@ Node *primary() {
 }
 
 Node *unary() {
+    Node *node;
     if(consume("+")) {
         return primary(); // 単項+の場合、+だけ進めてprimaryを呼ぶ
     }
@@ -152,6 +153,15 @@ Node *unary() {
     }
     if(consume("*")) {
         return new_node(ND_DEREF, unary(), NULL); // 単項-の場合、0-xとする
+    }
+    if(consume_kind(TK_SIZEOF)) {
+        node = unary();
+        set_type(node);
+        if(node->type->ty == INT) {
+            return new_node_num(4);
+        } else if (node->type->ty == PTR){
+            return new_node_num(8);
+        }
     }
     return primary(); // その他の場合、今までと同じ
 }

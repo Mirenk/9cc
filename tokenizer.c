@@ -172,6 +172,12 @@ Token *tokenize(char *p) {
             continue;
         }
 
+        if (strncmp(p, "sizeof", 6) == 0 && !is_ident(p[6])) {
+            cur = new_token(TK_SIZEOF, cur, p, 6);
+            p += 6;
+            continue;
+        }
+
         if(is_ident_head(*p)) {
             cur = new_token(TK_IDENT, cur, p, 0);
             char *tmp = p++;
