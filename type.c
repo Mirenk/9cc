@@ -1,4 +1,5 @@
 #include "9cc.h"
+#include "type.h"
 #include <stdlib.h>
 
 void set_type(Node *node) {

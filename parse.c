@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "9cc.h"
+#include "type.h"
 
 Node *new_node(NodeKind kind, Node *lhs, Node *rhs) {
     Node *node = calloc(1, sizeof(Node));
@@ -74,7 +75,11 @@ Node *new_lvar() {
     lvar->next = locals;
     lvar->name = tok->str;
     lvar->len = tok->len;
-    lvar->offset = locals->offset + 8;
+    if(lvar->type->ty == PTR) {
+        lvar->offset = locals->offset + PTR_SIZE;
+    } else if(lvar->type->ty == INT) {
+        lvar->offset = locals->offset + INT_SIZE;
+    }
     locals = lvar;
 
     node->offset = lvar->offset;

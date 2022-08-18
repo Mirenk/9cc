@@ -3,7 +3,8 @@
 
 static int counter = 0;
 
-char *argreg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+char *argreg64[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+char *argreg32[] = {"edi", "esi", "edx", "ecx", "r8d", "r9d"};
 
 void gen(Node *node);
 
@@ -40,7 +41,14 @@ void gen(Node *node) {
         case ND_LVAR:
         gen_lval(node);
         printf("  pop rax\n");
-        printf("  mov rax, [rax]\n");
+
+        if(node->type->ty == INT) {
+            printf("  mov eax, [rax]\n");
+            printf("  cdqe\n");
+        } else {
+            printf("  mov rax, [rax]\n");
+        }
+
         printf("  push rax\n");
         return;
         case ND_ASSIGN:
@@ -49,8 +57,14 @@ void gen(Node *node) {
 
         printf("  pop rdi\n");
         printf("  pop rax\n");
-        printf("  mov [rax], rdi\n");
-        printf("  push rdi\n");
+
+        if(node->lhs->type->ty == INT) {
+            printf("  mov [rax], edi\n");
+            printf("  push rdi\n");
+        } else {
+            printf("  mov [rax], rdi\n");
+            printf("  push rdi\n");
+        }
         return;
         case ND_RETURN:
         gen(node->lhs);
@@ -113,7 +127,7 @@ void gen(Node *node) {
             // 順にpopする
             // そうしないと引数が関数呼び出しの場合にうまく行かない
             for(int i = argn - 1; i >= 0; i--) {
-                printf("  pop %s\n", argreg[i]);
+                printf("  pop %s\n", argreg64[i]);
             }
             // rbpを保存
             printf("  push rbp\n");
@@ -208,7 +222,7 @@ void codegen(Func *prog) {
         for(Node *cur = func->args; cur; cur = cur->next) {
             gen_lval(cur);
             printf("  pop rax\n");
-            printf("  mov [rax], %s\n", argreg[argn]);
+            printf("  mov [rax], %s\n", argreg32[argn]); // 引数がintのみなので
             argn++;
         }
 
