@@ -42,31 +42,47 @@ Node *relational();
 Node *expr();
 Node *compound_stmt();
 
-Type *pointer() {
-    Type *cur = calloc(1, sizeof(Type));
-    Type *head = cur;
+Type *array(Type *type) {
+    Type *prev = type;
+    Type *head = prev;
 
-    while(consume("*")) {
-        cur->ty = PTR;
-
-        cur->ptr_to = calloc(1, sizeof(Type));
-        cur = cur->ptr_to;
+    while(consume("[")) {
+        head = calloc(1, sizeof(Type));
+        head->ty = ARRAY;
+        head->ptr_to = prev;
+        head->array_size = expect_number();
+        prev = head;
+        expect("]");
     }
-
-    cur->ty = INT;
 
     return head;
 }
 
-Node *new_lvar() {
+Type *pointer(Type *type) {
+    Type *prev = type;
+    Type *head = prev;
+
+    while(consume("*")) {
+        head = calloc(1, sizeof(Type));
+        head->ty = PTR;
+        head->ptr_to = prev;
+        prev = head;
+    }
+
+    return head;
+}
+
+Node *new_lvar(Type *type) {
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_LVAR;
 
     LVar *lvar = calloc(1, sizeof(LVar));
-    lvar->type = pointer();
-    node->type = lvar->type;
 
+    Type *base = pointer(type);
     Token *tok = expect_ident();
+    lvar->type = array(base);
+
+    node->type = lvar->type;
 
     if(find_lvar(tok)) {
         error("既に定義されている変数です。");
@@ -75,11 +91,21 @@ Node *new_lvar() {
     lvar->next = locals;
     lvar->name = tok->str;
     lvar->len = tok->len;
-    if(lvar->type->ty == PTR) {
-        lvar->offset = locals->offset + PTR_SIZE;
-    } else if(lvar->type->ty == INT) {
-        lvar->offset = locals->offset + INT_SIZE;
+
+    int size;
+    Type *cur = lvar->type;
+
+    if(base->ty == PTR) {
+        size = PTR_SIZE;
+    } else if(base->ty == INT) {
+        size = INT_SIZE;
     }
+
+    while(cur->ty == ARRAY) {
+        size *= cur->array_size;
+        cur = cur->ptr_to;
+    }
+    lvar->offset = locals->offset + size;
     locals = lvar;
 
     node->offset = lvar->offset;
@@ -166,6 +192,18 @@ Node *unary() {
             return new_node_num(4);
         } else if (node->type->ty == PTR){
             return new_node_num(8);
+        } else if (node->type->ty == ARRAY) {
+            Type *cur = node->type;
+            int size = 1;
+            while(cur->ty == ARRAY) {
+                size *= cur->array_size;
+                cur = cur->ptr_to;
+            }
+            if(cur->ty == INT) {
+                return new_node_num(size * INT_SIZE);
+            } else if(cur->ty == PTR) {
+                return new_node_num(size * PTR_SIZE);
+            }
         }
     }
     return primary(); // その他の場合、今までと同じ
@@ -312,7 +350,13 @@ Node *stmt() {
 }
 
 Node *declaration() {
-    return new_lvar();
+    Type *type = calloc(1, sizeof(Type));
+
+    if(consume_kind(TK_INT)) {
+        type->ty = INT;
+        return new_lvar(type);
+    }
+    return NULL;
 }
 
 Node *compound_stmt() {
@@ -322,8 +366,8 @@ Node *compound_stmt() {
     Node *cur = node;
 
     while(!consume("}")) {
-        if(consume_kind(TK_INT)) {
-            cur->next = declaration();
+        cur->next = declaration();
+        if(cur->next) {
             expect(";");
         } else {
             cur->next = stmt();
@@ -362,10 +406,10 @@ Func *function_definition() {
         if(cur != arg_head) {
             expect(",");
         }
-        if(!consume_kind(TK_INT)) {
+        cur->next = declaration();
+        if(!cur->next) {
             error("型名ではありません。");
         }
-        cur->next = declaration();
         cur = cur->next;
     }
     func->args = arg_head->next;

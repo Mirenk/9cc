@@ -126,4 +126,7 @@ assert 4 'int main(){return sizeof(1);}'
 assert 4 'int main(){int x; return sizeof(x+1);}'
 assert 4 'int main(){return sizeof(sizeof(1));}'
 assert 8 'int main(){int *x; return sizeof x;}'
+
+assert 16 'int main(){int a[4];return sizeof(a);}'
+assert 3 'int main(){int a[2]; *a = 1; *(a + 1) = 2; int *p; p = a; return *p + *(p + 1);}'
 echo OK

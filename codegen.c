@@ -21,7 +21,7 @@ void gen_lval(Node *node) {
 }
 
 void gen_calc_ptr(Node *node) {
-    if(node->type->ty == PTR) {
+    if(node->type->ty != INT) {
         printf("  pop rax\n");
         if(node->type->ptr_to->ty == INT) {
             printf("  mov rdi, %d\n", 4);

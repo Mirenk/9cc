@@ -52,8 +52,9 @@ typedef struct Type Type;
 
 // ローカル変数型の型
 struct Type {
-    enum { INT, PTR } ty;
+    enum { INT, PTR, ARRAY } ty;
     struct Type *ptr_to;
+    int array_size; // 配列の要素数
 };
 
 typedef struct Node Node;
