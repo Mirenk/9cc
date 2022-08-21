@@ -43,19 +43,17 @@ Node *expr();
 Node *compound_stmt();
 
 Type *array(Type *type) {
-    Type *prev = type;
-    Type *head = prev;
-
-    while(consume("[")) {
-        head = calloc(1, sizeof(Type));
-        head->ty = ARRAY;
-        head->ptr_to = prev;
-        head->array_size = expect_number();
-        prev = head;
-        expect("]");
+    if(!consume("[")) {
+        return type;
     }
 
-    return head;
+    Type *arr = calloc(1, sizeof(Type));
+
+    arr->ty = ARRAY;
+    arr->array_size = expect_number();
+    expect("]");
+    arr->ptr_to = array(type);
+    return arr;
 }
 
 Type *pointer(Type *type) {
@@ -188,23 +186,7 @@ Node *unary() {
     if(consume_kind(TK_SIZEOF)) {
         node = unary();
         set_type(node);
-        if(node->type->ty == INT) {
-            return new_node_num(4);
-        } else if (node->type->ty == PTR){
-            return new_node_num(8);
-        } else if (node->type->ty == ARRAY) {
-            Type *cur = node->type;
-            int size = 1;
-            while(cur->ty == ARRAY) {
-                size *= cur->array_size;
-                cur = cur->ptr_to;
-            }
-            if(cur->ty == INT) {
-                return new_node_num(size * INT_SIZE);
-            } else if(cur->ty == PTR) {
-                return new_node_num(size * PTR_SIZE);
-            }
-        }
+        return new_node_num(get_size(node->type));
     }
     return primary(); // その他の場合、今までと同じ
 }

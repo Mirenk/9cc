@@ -8,6 +8,22 @@ char *argreg32[] = {"edi", "esi", "edx", "ecx", "r8d", "r9d"};
 
 void gen(Node *node);
 
+void gen_load_addr(Node *node) {
+    if(node->type->ty == ARRAY) {
+        return;
+    }
+    printf("  pop rax\n");
+
+    if(node->type->ty == INT) {
+        printf("  mov eax, [rax]\n");
+        printf("  cdqe\n");
+    } else {
+        printf("  mov rax, [rax]\n");
+    }
+
+    printf("  push rax\n");
+}
+
 void gen_lval(Node *node) {
     if(node->kind == ND_LVAR) {
         printf("  mov rax, rbp\n");
@@ -23,11 +39,7 @@ void gen_lval(Node *node) {
 void gen_calc_ptr(Node *node) {
     if(node->type->ty != INT) {
         printf("  pop rax\n");
-        if(node->type->ptr_to->ty == INT) {
-            printf("  mov rdi, %d\n", 4);
-        } else {
-            printf("  mov rdi, %d\n", 8);
-        }
+        printf("  mov rdi, %d\n", get_size(node->type->ptr_to));
         printf("  imul rax, rdi\n");
         printf("  push rax\n");
     }
@@ -40,16 +52,7 @@ void gen(Node *node) {
         return;
         case ND_LVAR:
         gen_lval(node);
-        printf("  pop rax\n");
-
-        if(node->type->ty == INT) {
-            printf("  mov eax, [rax]\n");
-            printf("  cdqe\n");
-        } else {
-            printf("  mov rax, [rax]\n");
-        }
-
-        printf("  push rax\n");
+        gen_load_addr(node);
         return;
         case ND_ASSIGN:
         gen_lval(node->lhs);
@@ -150,9 +153,7 @@ void gen(Node *node) {
         return;
         case ND_DEREF:
         gen(node->lhs);
-        printf("  pop rax\n");
-        printf("  mov rax, [rax]\n");
-        printf("  push rax\n");
+        gen_load_addr(node);
         return;
     }
 

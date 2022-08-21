@@ -122,4 +122,5 @@ Token *tokenize(char *p);
 Func *program();
 void codegen(Func *prog);
 
+int get_size(Type *type);
 void set_type(Node *node);

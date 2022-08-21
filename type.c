@@ -2,6 +2,16 @@
 #include "type.h"
 #include <stdlib.h>
 
+int get_size(Type *type) {
+    if(type->ty == INT) {
+        return INT_SIZE;
+    } else if (type->ty == PTR){
+        return PTR_SIZE;
+    } else if (type->ty == ARRAY) {
+        return type->array_size * get_size(type->ptr_to);
+    }
+}
+
 void set_type(Node *node) {
     Node *n;
     Type *type = calloc(1, sizeof(Type));
