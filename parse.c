@@ -169,6 +169,18 @@ Node *primary() {
     return new_node_num(expect_number());
 }
 
+Node *postfix() {
+    Node *node = primary();
+
+    while(consume("[")) {
+        Node *index = expr();
+        expect("]");
+        node = new_node(ND_DEREF, new_node(ND_ADD, node, index), NULL);
+    }
+
+    return node;
+}
+
 Node *unary() {
     Node *node;
     if(consume("+")) {
@@ -188,7 +200,7 @@ Node *unary() {
         set_type(node);
         return new_node_num(get_size(node->type));
     }
-    return primary(); // その他の場合、今までと同じ
+    return postfix();
 }
 
 Node *mul() {

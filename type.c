@@ -36,6 +36,12 @@ void set_type(Node *node) {
         case ND_SUB:
         case ND_MUL:
         case ND_DIV:
+            if(node->rhs->type->ty == PTR || node->rhs->type->ty == ARRAY) {
+                node->type = node->rhs->type;
+            } else {
+                node->type = node->lhs->type;
+            }
+            return;
         case ND_RETURN:
             node->type = node->lhs->type;
             return;
