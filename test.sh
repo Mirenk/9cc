@@ -156,4 +156,6 @@ assert 3 'int main() { int x[2][3]; int *y; y=x; y[3]=3; return x[1][0]; }'
 assert 4 'int main() { int x[2][3]; int *y; y=x; y[4]=4; return x[1][1]; }'
 assert 5 'int main() { int x[2][3]; int *y; y=x; y[5]=5; return x[1][2]; }'
 
+assert 3 'int main() { int x[3]; x[0]=-3; x[1]=4; x[2]=-x[0]; return x[2]; }'
+
 echo OK

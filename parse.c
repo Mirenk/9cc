@@ -184,10 +184,10 @@ Node *postfix() {
 Node *unary() {
     Node *node;
     if(consume("+")) {
-        return primary(); // 単項+の場合、+だけ進めてprimaryを呼ぶ
+        return unary(); // 単項+の場合、+だけ進めてprimaryを呼ぶ
     }
     if(consume("-")) {
-        return new_node(ND_SUB, new_node_num(0), primary()); // 単項-の場合、0-xとする
+        return new_node(ND_SUB, new_node_num(0), unary()); // 単項-の場合、0-xとする
     }
     if(consume("&")) {
         return new_node(ND_ADDR, unary(), NULL); // アドレス演算
