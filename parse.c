@@ -22,10 +22,10 @@ Node *new_node_num(int val) {
     return node;
 }
 
-LVar *locals; // ローカル変数
+Obj *locals; // ローカル変数
 
-LVar *find_lvar(Token *tok) {
-    for(LVar *var = locals; var; var = var->next) {
+Obj *find_lvar(Token *tok) {
+    for(Obj *var = locals; var; var = var->next) {
         if(var->len == tok->len && !memcmp(tok->str, var->name, var->len)) {
             return var;
         }
@@ -74,7 +74,7 @@ Node *new_lvar(Type *type) {
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_LVAR;
 
-    LVar *lvar = calloc(1, sizeof(LVar));
+    Obj *lvar = calloc(1, sizeof(Obj));
 
     Type *base = pointer(type);
     Token *tok = expect_ident();
@@ -115,7 +115,7 @@ Node *lvar(Token *tok) {
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_LVAR;
 
-    LVar *lvar = find_lvar(tok);
+    Obj *lvar = find_lvar(tok);
     if(!lvar) { // 既存のローカル変数だった場合、その変数のoffsetをそのまま使用
         error("定義されていない変数です。");
     }
@@ -373,8 +373,8 @@ Node *compound_stmt() {
     return node;
 }
 
-Func *function_definition() {
-    LVar *lvar_head = calloc(1, sizeof(LVar));
+Obj *function_definition() {
+    Obj *lvar_head = calloc(1, sizeof(Obj));
     lvar_head->offset = 0; // オフセット初期化
     locals = lvar_head;
 
@@ -386,7 +386,7 @@ Func *function_definition() {
     Token *tok = expect_ident();
     expect("(");
 
-    Func *func = calloc(1, sizeof(Func));
+    Obj *func = calloc(1, sizeof(Obj));
 
     // 関数名を記録
     char *name = calloc(1, (sizeof(char) * tok->len) + 1);
@@ -420,9 +420,9 @@ Func *function_definition() {
     return func;
 }
 
-Func *program() {
-    Func *func_head = calloc(1, sizeof(Func)); // 構文木の先頭を保存しておく配列
-    Func *func = func_head;
+Obj *program() {
+    Obj *func_head = calloc(1, sizeof(Obj)); // 構文木の先頭を保存しておく配列
+    Obj *func = func_head;
 
     while(!at_eof()) {
         func->next = function_definition(); // トークンが終わるまで木を作成し，入れていく

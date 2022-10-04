@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
 
     // トークナイズする
     token = tokenize(user_input);
-    Func *prog = program();
+    Obj *prog = program();
 
     codegen(prog);
 

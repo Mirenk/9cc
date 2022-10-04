@@ -205,10 +205,10 @@ void gen(Node *node) {
 }
 
 
-void codegen(Func *prog) {
+void codegen(Obj *prog) {
     // アセンブリの前半部分を出力
     printf(".intel_syntax noprefix\n");
-    for(Func *func = prog; func; func = func->next) {
+    for(Obj *func = prog; func; func = func->next) {
         printf(".globl %s\n", func->name);
         printf("%s:\n", func->name);
 

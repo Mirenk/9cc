@@ -78,26 +78,19 @@ struct Node {
     int offset;    // kindがND_LVARの場合のみ使う
 };
 
-typedef struct LVar LVar;
+typedef struct Obj Obj;
 
 // ローカル変数の型
-struct LVar {
-    LVar *next; // 次の変数かNULL
+struct Obj {
+    Obj *next; // 次の変数かNULL
     Type *type; // 変数の型
     char *name; // 変数名
     int len;    // 変数名の長さ
     int offset; // RBPからのオフセット
-};
 
-typedef struct Func Func;
-
-// 関数型
-struct Func {
-    Func *next;
-    char *name;
     Node *code;
     Node *args;
-    LVar *locals;
+    Obj *locals;
     int stack_size;
 };
 
@@ -119,8 +112,8 @@ Token *expect_ident();
 bool at_eof();
 
 Token *tokenize(char *p);
-Func *program();
-void codegen(Func *prog);
+Obj *program();
+void codegen(Obj *prog);
 
 int get_size(Type *type);
 void set_type(Node *node);
