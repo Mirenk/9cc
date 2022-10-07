@@ -31,6 +31,12 @@ Obj *find_lvar(Token *tok) {
             return var;
         }
     }
+    for(Obj *var = globals; var; var = var->next) {
+        if(var->len == tok->len && !memcmp(tok->str, var->name, var->len)) {
+            return var;
+        }
+    }
+
     return NULL;
 }
 
@@ -94,11 +100,24 @@ Obj *new_obj(Type *type) {
         error("既に定義されているシンボルです。");
     }
 
-    obj->name = tok->str;
+    char *name = calloc(1, (sizeof(char) * tok->len) + 1);
+    strncpy(name, tok->str, tok->len);
+    obj->name = name;
     obj->len = tok->len;
 
+    obj->type->size = get_size(obj->type);
+
+    return obj;
+}
+
+Obj *new_gvar(Obj *gvar) {
+    Type *base = gvar->type;
+
+    gvar->type = array(base);
+    gvar->is_local = false;
+
     int size;
-    Type *cur = obj->type;
+    Type *cur = gvar->type;
 
     if(base->ty == PTR) {
         size = PTR_SIZE;
@@ -106,15 +125,23 @@ Obj *new_obj(Type *type) {
         size = INT_SIZE;
     }
 
-    return obj;
-}
+    while(cur->ty == ARRAY) {
+        size *= cur->array_size;
+        cur = cur->ptr_to;
+    }
+    gvar->type->size = size;
 
+    return gvar;
+
+}
 
 Node *new_lvar(Type *type) {
     Node *node = calloc(1, sizeof(Node));
     Obj *lvar = new_obj(type);
+    lvar->is_local = true;
     Type *base = lvar->type;
-    node->kind = ND_LVAR;
+    node->kind = ND_VAR;
+    node->var = lvar;
 
     lvar->type = array(base);
 
@@ -138,20 +165,18 @@ Node *new_lvar(Type *type) {
     lvar->offset = locals->offset + size;
     locals = lvar;
 
-    node->offset = lvar->offset;
-
     return node;
 }
 
 Node *lvar(Token *tok) {
     Node *node = calloc(1, sizeof(Node));
-    node->kind = ND_LVAR;
+    node->kind = ND_VAR;
 
     Obj *lvar = find_lvar(tok);
     if(!lvar) { // 未定義なシンボル
         error("定義されていない変数です。");
     }
-    node->offset = lvar->offset;
+    node->var = lvar;
     node->type = lvar->type;
 
     return node;
@@ -410,13 +435,10 @@ Obj *function_definition(Obj *func) {
     lvar_head->offset = 0; // オフセット初期化
     locals = lvar_head;
 
-    expect("(");
+    if(!consume("(")) {
+        return NULL;
+    };
     func->is_func = true;
-
-    // 関数名を記録
-    char *name = calloc(1, (sizeof(char) * func->len) + 1);
-    strncpy(name, func->name, func->len);
-    func->name = name;
 
     // 引数
     Node *arg_head = calloc(1, sizeof(Node));
@@ -451,10 +473,11 @@ Obj *program() {
 
     while(!at_eof()) {
         Obj *obj = new_obj(declarator());
-        if(consume(";")) {
+        cur->next = function_definition(obj);
+        if(!cur->next) {
             // グローバル変数
-        } else {
-            cur->next = function_definition(obj); // トークンが終わるまで木を作成し，入れていく
+            cur->next = new_gvar(obj);
+            expect(";");
         }
         cur = cur->next;
     }

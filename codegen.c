@@ -25,10 +25,15 @@ void gen_load_addr(Node *node) {
 }
 
 void gen_lval(Node *node) {
-    if(node->kind == ND_LVAR) {
-        printf("  mov rax, rbp\n");
-        printf("  sub rax, %d\n", node->offset);
-        printf("  push rax\n");
+    if(node->kind == ND_VAR) {
+        if(node->var->is_local) {
+            printf("  mov rax, rbp\n");
+            printf("  sub rax, %d\n", node->var->offset);
+            printf("  push rax\n");
+        } else {
+            printf("  lea rax, %s[rip]\n", node->var->name);
+            printf("  push rax\n");
+        }
     } else if(node->kind == ND_DEREF) {
         gen(node->lhs);
     } else {
@@ -50,7 +55,7 @@ void gen(Node *node) {
         case ND_NUM:
         printf("  push %d\n", node->val);
         return;
-        case ND_LVAR:
+        case ND_VAR:
         gen_lval(node);
         gen_load_addr(node);
         return;
@@ -204,16 +209,30 @@ void gen(Node *node) {
     printf("  push rax\n");
 }
 
+void datagen(Obj *prog) {
+    for(Obj *var = prog; var; var = var->next) {
+        if(var->is_func) {
+            continue;
+        }
 
-void codegen(Obj *prog) {
-    // アセンブリの前半部分を出力
-    printf(".intel_syntax noprefix\n");
+        printf("  .data\n");
+        printf("  .globl %s\n", var->name);
+        printf("%s:\n", var->name);
+        printf("  .zero %d\n", var->type->size);
+    }
+}
+
+void textgen(Obj *prog) {
     for(Obj *func = prog; func; func = func->next) {
-        printf(".globl %s\n", func->name);
+        if(!func->is_func) {
+            continue;
+        }
+
+        printf("  .globl %s\n", func->name);
+        printf("  .text\n");
         printf("%s:\n", func->name);
 
         // プロローグ
-        // 変数26個分の領域を確保する
         printf("  push rbp\n");
         printf("  mov rbp, rsp\n");
         printf("  sub rsp, %d\n", func->stack_size);
@@ -242,4 +261,11 @@ void codegen(Obj *prog) {
         printf("  pop rbp\n");
         printf("  ret\n");
     }
+}
+
+void codegen(Obj *prog) {
+    // アセンブリの前半部分を出力
+    printf(".intel_syntax noprefix\n");
+    datagen(prog);
+    textgen(prog);
 }

@@ -26,7 +26,7 @@ typedef enum {
     ND_LT,  // <
     ND_LE,  // <=
     ND_ASSIGN, // =
-    ND_LVAR,   // ローカル変数
+    ND_VAR,   // 変数
     ND_NUM, // 整数
     ND_RETURN, // return
     ND_IF,  // if
@@ -55,9 +55,11 @@ struct Type {
     enum { INT, PTR, ARRAY } ty;
     struct Type *ptr_to;
     int array_size; // 配列の要素数
+    int size;
 };
 
 typedef struct Node Node;
+typedef struct Obj Obj;
 
 // 抽象構文木のノードの型
 struct Node {
@@ -75,10 +77,8 @@ struct Node {
     Type *type;      // ノードの型
     char *funcname;// kindがND_CALLの場合のみ使う
     int val;       // kindがND_NUMの場合のみ使う
-    int offset;    // kindがND_LVARの場合のみ使う
+    Obj *var;
 };
-
-typedef struct Obj Obj;
 
 // ローカル変数の型
 struct Obj {
@@ -87,6 +87,7 @@ struct Obj {
     char *name; // 変数名
     int len;    // 変数名の長さ
     int offset; // RBPからのオフセット
+    bool is_local;
 
     // 関数
     bool is_func;
