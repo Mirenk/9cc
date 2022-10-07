@@ -88,6 +88,8 @@ struct Obj {
     int len;    // 変数名の長さ
     int offset; // RBPからのオフセット
 
+    // 関数
+    bool is_func;
     Node *code;
     Node *args;
     Obj *locals;

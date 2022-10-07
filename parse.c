@@ -42,6 +42,18 @@ Node *relational();
 Node *expr();
 Node *compound_stmt();
 
+Type *declarator() {
+    Type *type = calloc(1, sizeof(Type));
+
+    if(consume_kind(TK_INT)) {
+        type->ty = INT;
+    } else {
+        return NULL;
+    }
+
+    return type;
+}
+
 Type *array(Type *type) {
     if(!consume("[")) {
         return type;
@@ -70,25 +82,44 @@ Type *pointer(Type *type) {
     return head;
 }
 
-Node *new_lvar(Type *type) {
-    Node *node = calloc(1, sizeof(Node));
-    node->kind = ND_LVAR;
-
-    Obj *lvar = calloc(1, sizeof(Obj));
+Obj *new_obj(Type *type) {
+    Obj *obj = calloc(1, sizeof(Obj));
 
     Type *base = pointer(type);
+    obj->type = base;
     Token *tok = expect_ident();
+
+    if(find_lvar(tok)) {
+        error("既に定義されているシンボルです。");
+    }
+
+    obj->name = tok->str;
+    obj->len = tok->len;
+
+    int size;
+    Type *cur = obj->type;
+
+    if(base->ty == PTR) {
+        size = PTR_SIZE;
+    } else if(base->ty == INT) {
+        size = INT_SIZE;
+    }
+
+    return obj;
+}
+
+
+Node *new_lvar(Type *type) {
+    Node *node = calloc(1, sizeof(Node));
+    Obj *lvar = new_obj(type);
+    Type *base = lvar->type;
+    node->kind = ND_LVAR;
+
     lvar->type = array(base);
 
     node->type = lvar->type;
 
-    if(find_lvar(tok)) {
-        error("既に定義されている変数です。");
-    }
-
     lvar->next = locals;
-    lvar->name = tok->str;
-    lvar->len = tok->len;
 
     int size;
     Type *cur = lvar->type;
@@ -116,7 +147,7 @@ Node *lvar(Token *tok) {
     node->kind = ND_LVAR;
 
     Obj *lvar = find_lvar(tok);
-    if(!lvar) { // 既存のローカル変数だった場合、その変数のoffsetをそのまま使用
+    if(!lvar) { // 未定義なシンボル
         error("定義されていない変数です。");
     }
     node->offset = lvar->offset;
@@ -344,13 +375,13 @@ Node *stmt() {
 }
 
 Node *declaration() {
-    Type *type = calloc(1, sizeof(Type));
+    Type *type = declarator();
 
-    if(consume_kind(TK_INT)) {
-        type->ty = INT;
-        return new_lvar(type);
+    if(!type) {
+        return NULL;
     }
-    return NULL;
+
+    return new_lvar(type);
 }
 
 Node *compound_stmt() {
@@ -378,19 +409,12 @@ Obj *function_definition() {
     lvar_head->offset = 0; // オフセット初期化
     locals = lvar_head;
 
-    // intから始まるかチェック
-    if(!consume_kind(TK_INT)) {
-        error("型名ではありません。");
-    }
-
-    Token *tok = expect_ident();
+    Obj *func = new_obj(declarator());
     expect("(");
 
-    Obj *func = calloc(1, sizeof(Obj));
-
     // 関数名を記録
-    char *name = calloc(1, (sizeof(char) * tok->len) + 1);
-    strncpy(name, tok->str, tok->len);
+    char *name = calloc(1, (sizeof(char) * func->len) + 1);
+    strncpy(name, func->name, func->len);
     func->name = name;
 
     // 引数
