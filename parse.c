@@ -54,6 +54,8 @@ Type *declarator() {
 
     if(consume_kind(TK_INT)) {
         type->ty = INT;
+    } else if(consume_kind(TK_CHAR)) {
+        type->ty = CHAR;
     } else {
         return NULL;
     }
@@ -115,21 +117,7 @@ Obj *new_gvar(Obj *gvar) {
 
     gvar->type = array(base);
     gvar->is_local = false;
-
-    int size;
-    Type *cur = gvar->type;
-
-    if(base->ty == PTR) {
-        size = PTR_SIZE;
-    } else if(base->ty == INT) {
-        size = INT_SIZE;
-    }
-
-    while(cur->ty == ARRAY) {
-        size *= cur->array_size;
-        cur = cur->ptr_to;
-    }
-    gvar->type->size = size;
+    gvar->type->size = get_size(gvar->type);
 
     return gvar;
 
@@ -148,21 +136,7 @@ Node *new_lvar(Type *type) {
     node->type = lvar->type;
 
     lvar->next = locals;
-
-    int size;
-    Type *cur = lvar->type;
-
-    if(base->ty == PTR) {
-        size = PTR_SIZE;
-    } else if(base->ty == INT) {
-        size = INT_SIZE;
-    }
-
-    while(cur->ty == ARRAY) {
-        size *= cur->array_size;
-        cur = cur->ptr_to;
-    }
-    lvar->offset = locals->offset + size;
+    lvar->offset = locals->offset + get_size(lvar->type);
     locals = lvar;
 
     return node;

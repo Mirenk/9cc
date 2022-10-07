@@ -12,6 +12,7 @@ typedef enum {
     TK_WHILE,    // while
     TK_FOR,      // for
     TK_INT,      // int
+    TK_CHAR,     // char
     TK_SIZEOF,   // sizeof
 } TokenKind;
 
@@ -52,7 +53,7 @@ typedef struct Type Type;
 
 // ローカル変数型の型
 struct Type {
-    enum { INT, PTR, ARRAY } ty;
+    enum { INT, PTR, ARRAY, CHAR } ty;
     struct Type *ptr_to;
     int array_size; // 配列の要素数
     int size;

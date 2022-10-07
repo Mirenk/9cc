@@ -5,6 +5,8 @@
 int get_size(Type *type) {
     if(type->ty == INT) {
         return INT_SIZE;
+    } else if(type->ty == CHAR) {
+        return CHAR_SIZE;
     } else if (type->ty == PTR){
         return PTR_SIZE;
     } else if (type->ty == ARRAY) {

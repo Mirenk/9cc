@@ -5,6 +5,7 @@ static int counter = 0;
 
 char *argreg64[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 char *argreg32[] = {"edi", "esi", "edx", "ecx", "r8d", "r9d"};
+char *argreg8[] = {"dil", "sil", "dl", "cl", "r8b", "r9b"};
 
 void gen(Node *node);
 
@@ -17,7 +18,9 @@ void gen_load_addr(Node *node) {
     if(node->type->ty == INT) {
         printf("  mov eax, [rax]\n");
         printf("  cdqe\n");
-    } else {
+    } else if(node->type->size == 1) {
+        printf("  movsbq rax, [rax]\n");
+    }else {
         printf("  mov rax, [rax]\n");
     }
 
@@ -42,7 +45,7 @@ void gen_lval(Node *node) {
 }
 
 void gen_calc_ptr(Node *node) {
-    if(node->type->ty != INT) {
+    if(node->type->ty == PTR || node->type->ty == ARRAY) {
         printf("  pop rax\n");
         printf("  mov rdi, %d\n", get_size(node->type->ptr_to));
         printf("  imul rax, rdi\n");
@@ -69,7 +72,10 @@ void gen(Node *node) {
         if(node->lhs->type->ty == INT) {
             printf("  mov [rax], edi\n");
             printf("  push rdi\n");
-        } else {
+        } else if(node->lhs->type->ty == CHAR) {
+            printf("  mov [rax], dil\n");
+            printf("  push rdi\n");
+        }else {
             printf("  mov [rax], rdi\n");
             printf("  push rdi\n");
         }
@@ -242,7 +248,11 @@ void textgen(Obj *prog) {
         for(Node *cur = func->args; cur; cur = cur->next) {
             gen_lval(cur);
             printf("  pop rax\n");
-            printf("  mov [rax], %s\n", argreg32[argn]); // 引数がintのみなので
+            if(cur->var->type->size == 1) {
+                printf("  mov [rax], %s\n", argreg8[argn]); // 引数がchar
+            } else {
+                printf("  mov [rax], %s\n", argreg32[argn]); // 引数がintのみなので
+            }
             argn++;
         }
 
