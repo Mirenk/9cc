@@ -23,6 +23,7 @@ Node *new_node_num(int val) {
 }
 
 Obj *locals; // ローカル変数
+Obj *globals;
 
 Obj *find_lvar(Token *tok) {
     for(Obj *var = locals; var; var = var->next) {
@@ -404,13 +405,13 @@ Node *compound_stmt() {
     return node;
 }
 
-Obj *function_definition() {
+Obj *function_definition(Obj *func) {
     Obj *lvar_head = calloc(1, sizeof(Obj));
     lvar_head->offset = 0; // オフセット初期化
     locals = lvar_head;
 
-    Obj *func = new_obj(declarator());
     expect("(");
+    func->is_func = true;
 
     // 関数名を記録
     char *name = calloc(1, (sizeof(char) * func->len) + 1);
@@ -445,14 +446,19 @@ Obj *function_definition() {
 }
 
 Obj *program() {
-    Obj *func_head = calloc(1, sizeof(Obj)); // 構文木の先頭を保存しておく配列
-    Obj *func = func_head;
+    Obj *cur = calloc(1, sizeof(Obj));
+    globals = cur;
 
     while(!at_eof()) {
-        func->next = function_definition(); // トークンが終わるまで木を作成し，入れていく
-        func = func->next;
+        Obj *obj = new_obj(declarator());
+        if(consume(";")) {
+            // グローバル変数
+        } else {
+            cur->next = function_definition(obj); // トークンが終わるまで木を作成し，入れていく
+        }
+        cur = cur->next;
     }
-    func->next = NULL; // 最後の木の後にnullを入れ，末尾が分かるようにする
+    cur->next = NULL; // 最後の木の後にnullを入れ，末尾が分かるようにする
 
-    return func_head->next;
+    return globals->next;
 }
