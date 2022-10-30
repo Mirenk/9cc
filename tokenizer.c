@@ -43,12 +43,13 @@ bool consume(char *op) {
 
 // 次のトークンが期待している型のトークンのときには、トークンを一つ読み進めて
 // 真を返す。それ以外の場合には偽を返す
-bool consume_kind(TokenKind op) {
+Token *consume_kind(TokenKind op) {
+    Token *kind_token = token;
     if(token->kind != op) {
-        return false;
+        return NULL;
     }
     token = token->next;
-    return true;
+    return kind_token;
 }
 
 // トークンがTK_IDENTの場合はトークンのポインタを返す
@@ -210,6 +211,21 @@ Token *tokenize(char *p) {
             char *tmp = p;
             cur->val = strtol(p, &p, 10);
             cur->len = p - tmp;
+            continue;
+        }
+
+        if(*p == '"') {
+            cur = new_token(TK_STR, cur, p, 0);
+            char *tmp = p;
+            p++;
+            while(*p != '"') {
+                if(*p == '\n' || *p == '\0') {
+                    error_at(p, "文字列が閉じられていません");
+                }
+                p++;
+            }
+            cur->len = p - tmp;
+            p++;
             continue;
         }
 

@@ -25,7 +25,7 @@ Node *new_node_num(int val) {
 Obj *locals; // ローカル変数
 Obj *globals;
 
-Obj *find_lvar(Token *tok) {
+Obj *find_var(Token *tok) {
     for(Obj *var = locals; var; var = var->next) {
         if(var->len == tok->len && !memcmp(tok->str, var->name, var->len)) {
             return var;
@@ -98,7 +98,7 @@ Obj *new_obj(Type *type) {
     obj->type = base;
     Token *tok = expect_ident();
 
-    if(find_lvar(tok)) {
+    if(find_var(tok)) {
         error("既に定義されているシンボルです。");
     }
 
@@ -112,6 +112,14 @@ Obj *new_obj(Type *type) {
     return obj;
 }
 
+Obj *new_gobj(Type *type) {
+    Obj *head = new_obj(type);
+    head->next = globals;
+    globals = head;
+
+    return head;
+}
+
 Obj *new_gvar(Obj *gvar) {
     Type *base = gvar->type;
 
@@ -121,6 +129,36 @@ Obj *new_gvar(Obj *gvar) {
 
     return gvar;
 
+}
+
+char *new_unique_name() {
+    static int id = 0;
+    char *buf = calloc(1, 20); // 20まで
+    sprintf(buf, ".LC%d", id++);
+    return buf;
+}
+
+Obj *new_string_literal(char *name) {
+    Obj *obj = calloc(1, sizeof(Obj));
+
+    obj->init_data = name;
+
+    obj->type = calloc(1, sizeof(Type));
+    obj->type->ty = ARRAY;
+    obj->type->array_size = strlen(name) - 1;
+    obj->type->ptr_to = calloc(1, sizeof(Type));
+    obj->type->ptr_to->ty = CHAR;
+    obj->type->ptr_to->size = CHAR_SIZE;
+
+    obj->name = new_unique_name();
+    obj->len = strlen(obj->name);
+
+    obj->type->size = get_size(obj->type);
+
+    obj->next = globals->next;
+    globals->next = obj;
+
+    return obj;
 }
 
 Node *new_lvar(Type *type) {
@@ -146,7 +184,7 @@ Node *lvar(Token *tok) {
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_VAR;
 
-    Obj *lvar = find_lvar(tok);
+    Obj *lvar = find_var(tok);
     if(!lvar) { // 未定義なシンボル
         error("定義されていない変数です。");
     }
@@ -193,6 +231,23 @@ Node *primary() {
         } else {
             node = lvar(tok);
         }
+        return node;
+    }
+
+    // 文字列リテラル
+    tok = consume_kind(TK_STR);
+    if(tok) {
+        Node *node = calloc(1, sizeof(Node));
+        char *literal = calloc(1, (sizeof(char) * tok->len) + 1);
+        strncpy(literal, tok->str, tok->len+1);
+
+        Obj *obj = new_string_literal(literal);
+        node->var = obj;
+        tok = tok->next;
+
+        node->kind = ND_VAR;
+        node->type = obj->type;
+
         return node;
     }
 
@@ -442,20 +497,17 @@ Obj *function_definition(Obj *func) {
 }
 
 Obj *program() {
-    Obj *cur = calloc(1, sizeof(Obj));
-    globals = cur;
+    globals = NULL;
 
     while(!at_eof()) {
-        Obj *obj = new_obj(declarator());
-        cur->next = function_definition(obj);
-        if(!cur->next) {
+        Obj *obj = new_gobj(declarator());
+        Obj *func = function_definition(obj);
+        if(!func) {
             // グローバル変数
-            cur->next = new_gvar(obj);
+            new_gvar(obj);
             expect(";");
         }
-        cur = cur->next;
     }
-    cur->next = NULL; // 最後の木の後にnullを入れ，末尾が分かるようにする
 
-    return globals->next;
+    return globals;
 }

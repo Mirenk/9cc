@@ -14,6 +14,7 @@ typedef enum {
     TK_INT,      // int
     TK_CHAR,     // char
     TK_SIZEOF,   // sizeof
+    TK_STR,      // string
 } TokenKind;
 
 // 抽象構文木のノードの種類
@@ -96,6 +97,8 @@ struct Obj {
     Node *args;
     Obj *locals;
     int stack_size;
+
+    char *init_data; // 文字列
 };
 
 // 入力プログラム
@@ -107,7 +110,7 @@ extern Token *token;
 void error(char *fmt, ...);
 void error_at(char *loc, char *fmt, ...);
 bool consume(char *op);
-bool consume_kind(TokenKind op);
+Token *consume_kind(TokenKind op);
 Token *consume_ident();
 void expect(char *op);
 int expect_number();

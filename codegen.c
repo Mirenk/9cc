@@ -224,7 +224,11 @@ void datagen(Obj *prog) {
         printf("  .data\n");
         printf("  .globl %s\n", var->name);
         printf("%s:\n", var->name);
-        printf("  .zero %d\n", var->type->size);
+        if(var->init_data) {
+            printf("  .string %s\n", var->init_data);
+        } else {
+            printf("  .zero %d\n", var->type->size);
+        }
     }
 }
 
