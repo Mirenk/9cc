@@ -3,6 +3,7 @@
 
 // 入力プログラム
 char *user_input;
+char *filename;
 
 // 現在着目しているトークン
 Token *token;
@@ -15,7 +16,9 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    user_input = argv[1];
+    filename = argv[1];
+
+    user_input = read_file(filename);
 
     // トークナイズする
     token = tokenize(user_input);

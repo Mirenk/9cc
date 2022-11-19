@@ -124,3 +124,6 @@ void codegen(Obj *prog);
 
 int get_size(Type *type);
 void set_type(Node *node);
+
+extern char *filename;
+char *read_file(char *path);
