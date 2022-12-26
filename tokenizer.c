@@ -156,6 +156,23 @@ Token *tokenize(char *p) {
             continue;
         }
 
+        // 行コメントをスキップ
+        if (strncmp(p, "//", 2) == 0) {
+            p += 2;
+            while (*p != '\n')
+                p++;
+            continue;
+        }
+
+        // ブロックコメントをスキップ
+        if (strncmp(p, "/*", 2) == 0) {
+            char *q = strstr(p + 2, "*/");
+            if (!q)
+                error_at(p, "コメントが閉じられていません");
+            p = q + 2;
+            continue;
+        }
+
         if (strncmp(p, "return", 6) == 0 && !is_ident(p[6])) {
             cur = new_token(TK_RETURN, cur, p, 6);
             p += 6;
